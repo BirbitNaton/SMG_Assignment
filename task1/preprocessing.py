@@ -1,5 +1,5 @@
+import json
 import os
-from collections import defaultdict
 from datetime import datetime
 from logging import getLogger
 from pathlib import Path
@@ -18,8 +18,9 @@ from tqdm.auto import tqdm
 root_path = Path(os.getcwd()).parent
 dataset_filename = "houses_Madrid.csv"
 save_path = root_path / "data" / dataset_filename
-DATASET_SCHEME = defaultdict(list)
+datase_schema_path = root_path / "data" / "dataset_schema.json"
 logger = getLogger()
+dataset_schema = json.load(Path(root_path / "data" / "dataset_schema.json").open())
 
 NEIGHBORHOOD_FEATURE_NAMES = [
     "sq_mt_price",
@@ -144,7 +145,7 @@ def convert_target(frame: pd.DataFrame) -> pd.DataFrame:
     """Applies target transformations.
 
     Applies log transform to the target, since it was
-    shown o exhibit lognormal distribution earlier.
+    shown to exhibit lognormal distribution earlier.
 
     Parameters
     ----------
@@ -158,6 +159,27 @@ def convert_target(frame: pd.DataFrame) -> pd.DataFrame:
     """
 
     frame["buy_price"] = np.log(frame["buy_price"])
+    return frame
+
+
+@FunctionTransformer
+def revert_target(frame: pd.DataFrame) -> pd.DataFrame:
+    """Reverts target transformations.
+
+    Applies exponential function to revert log transform to the target.
+
+    Parameters
+    ----------
+    frame : pd.DataFrame
+        previous step frame
+
+    Returns
+    -------
+    pd.DataFrame
+        frame with changed target
+    """
+
+    frame["buy_price"] = np.exp(frame["buy_price"])
     return frame
 
 
@@ -198,10 +220,10 @@ def process_square_meters(frame: pd.DataFrame) -> pd.DataFrame:
     # Derive median ratio of built/useful square meters and restore both columns
     median_ratio = (clean_frame["sq_mt_built"] / clean_frame["sq_mt_useful"]).median()
 
-    frame = frame[
-        (sq_mt_built_present & sq_mt_built_meaningful)
-        | (sq_mt_useful_present & sq_mt_useful_meaningful)
-    ]
+    # frame = frame[
+    #     (sq_mt_built_present & sq_mt_built_meaningful)
+    #     | (sq_mt_useful_present & sq_mt_useful_meaningful)
+    # ]
 
     frame["sq_mt_built_proc"] = frame["sq_mt_built"]
     frame["sq_mt_built_proc"].loc[frame["sq_mt_built_proc"].isna()] = (
@@ -522,7 +544,6 @@ def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
     * energy_certificate - establishes order and adds presence feature
     * built_year - handles failed values and bins everything else,
         sets Nones to 0
-    * n_rooms - minmax transform
     * n_bathrooms - restored via n_rooms
     * house_type_id - establishes order, None first
 
@@ -554,11 +575,6 @@ def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
     ).astype(float)
     frame["built_year"][frame["built_year"].isna()] = 0
 
-    # Process n_rooms. Minmax transform
-    frame["n_rooms"] = (frame["n_rooms"] - frame["n_rooms"].min()) / (
-        frame["n_rooms"].max() - frame["n_rooms"].min()
-    )
-
     # Process n_bathrooms. Restore from known samples
     bathrooms_stated_mask = ~frame["n_bathrooms"].isna()
     bathroom_coefficient = (
@@ -566,9 +582,7 @@ def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
         / frame[bathrooms_stated_mask]["n_bathrooms"]
     ).mean()
     frame["n_bathrooms"][~bathrooms_stated_mask] = (
-        (frame[~bathrooms_stated_mask]["n_rooms"] / bathroom_coefficient)
-        .round()
-        .astype(int)
+        frame[~bathrooms_stated_mask]["n_rooms"] / bathroom_coefficient
     )
 
     # Process house_type_id. Set as indices in ordered list
@@ -577,3 +591,22 @@ def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
     )
 
     return frame
+
+
+@FunctionTransformer
+def feature_selector(frame: pd.DataFrame) -> pd.DataFrame:
+    """Select only required features.
+
+    Uses preloaded dataset_schema to select features for the model training.
+
+    Parameters
+    ----------
+    frame : pd.DataFrame
+        previous step frame with prepared features
+
+    Returns
+    -------
+    pd.DataFrame
+        frame with only the selected features
+    """
+    return frame[dataset_schema["features"]]
