@@ -1,5 +1,6 @@
 import os
 from collections import defaultdict
+from logging import getLogger
 from pathlib import Path
 
 import kagglehub
@@ -17,6 +18,7 @@ root_path = Path(os.getcwd()).parent
 dataset_filename = "houses_Madrid.csv"
 save_path = root_path / "data" / dataset_filename
 DATASET_SCHEME = defaultdict(list)
+logger = getLogger()
 
 NEIGHBORHOOD_FEATURE_NAMES = [
     "sq_mt_price",
@@ -116,6 +118,7 @@ else:
     df.to_csv(save_path)
 
 
+@FunctionTransformer
 def convert_target(frame: pd.DataFrame) -> pd.DataFrame:
     """Applies target transformations.
 
@@ -315,7 +318,7 @@ def split_neighbourhood_id(
             district_location.longitude,
         )
     except GeocoderTimedOut as e:
-        print(f"Query '{district_query}' Failed.")
+        logger.exception(f"Query '{district_query}' Failed.")
         raise e
 
     # Get neighborhood coordinates
@@ -333,7 +336,7 @@ def split_neighbourhood_id(
                 neighborhood_location.longitude,
             )
     except GeocoderTimedOut as e:
-        print(f"Query '{neighborhood_query}' Failed.")
+        logger.exception(f"Query '{neighborhood_query}' Failed.")
         raise e
 
     # Convert coordinates into distance and bearing from city's center,
@@ -404,7 +407,7 @@ def process_neighborhoods(frame: pd.DataFrame) -> pd.DataFrame:
                         index=NEIGHBORHOOD_FEATURE_NAMES,
                     )
                 except Exception as e:
-                    print(f"{id}, index: {idx}")
+                    logger.exception(f"{id}, index: {idx}")
                     raise e
         neighborhoods_data = pd.DataFrame(neighborhood_id_mapping).T
         neighborhoods_data.to_csv(neighborhoods_data_path)
