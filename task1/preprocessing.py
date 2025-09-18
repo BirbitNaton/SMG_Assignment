@@ -218,8 +218,12 @@ def process_square_meters(frame: pd.DataFrame) -> pd.DataFrame:
     frame["sq_mt_useful_proc"] = np.log(frame["sq_mt_useful_proc"])
 
     # Add square meters numbers' presence
-    frame["sq_mt_built_present"] = sq_mt_built_present & sq_mt_built_meaningful
-    frame["sq_mt_useful_present"] = sq_mt_useful_present & sq_mt_useful_meaningful
+    frame["sq_mt_built_present"] = (
+        sq_mt_built_present & sq_mt_built_meaningful
+    ).astype(int)
+    frame["sq_mt_useful_present"] = (
+        sq_mt_useful_present & sq_mt_useful_meaningful
+    ).astype(int)
 
     return frame
 
@@ -513,7 +517,9 @@ def process_boolean_features(frame: pd.DataFrame) -> pd.DataFrame:
 @FunctionTransformer
 def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
     # Process energy certificates. Set as indices in ordered list
-    frame["energy_certificate_provided"] = frame["energy_certificate"] == "no indicado"
+    frame["energy_certificate_provided"] = (
+        frame["energy_certificate"] == "no indicado"
+    ).astype(int)
     frame["energy_certificate"] = frame["energy_certificate"].apply(
         lambda certificate: ENERGY_CERTIFICATE_ORDER.index(certificate)
     )
