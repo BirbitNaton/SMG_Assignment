@@ -516,6 +516,27 @@ def process_boolean_features(frame: pd.DataFrame) -> pd.DataFrame:
 
 @FunctionTransformer
 def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
+    """Prepares ordinal features.
+
+    Processes certain types of ordinal features separately.
+    * energy_certificate - establishes order and adds presence feature
+    * built_year - handles failed values and bins everything else,
+        sets Nones to 0
+    * n_rooms - minmax transform
+    * n_bathrooms - restored via n_rooms
+    * house_type_id - establishes order, None first
+
+
+    Parameters
+    ----------
+    frame : pd.DataFrame
+        previous step frame
+
+    Returns
+    -------
+    pd.DataFrame
+        frame with added and processed ordinal features
+    """
     # Process energy certificates. Set as indices in ordered list
     frame["energy_certificate_provided"] = (
         frame["energy_certificate"] == "no indicado"
