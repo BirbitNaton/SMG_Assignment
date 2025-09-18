@@ -1,5 +1,6 @@
 import os
 from collections import defaultdict
+from datetime import datetime
 from logging import getLogger
 from pathlib import Path
 
@@ -104,6 +105,26 @@ INCOMPLETE_BOOLEAN_FEATURES = [
 NON_EMPTY_FEATURES = list(
     set(ALL_BOOLEAN_FEATURES).difference(set(EMPTY_BOOLEAN_FEATURES))
 )
+
+ENERGY_CERTIFICATE_ORDER = [
+    "no indicado",
+    "en trámite",
+    "G",
+    "F",
+    "E",
+    "D",
+    "C",
+    "B",
+    "A",
+    "inmueble exento",
+]
+HOUSE_TYPE_ORDER = [
+    np.nan,
+    "HouseType 1: Pisos",
+    "HouseType 5: Áticos",
+    "HouseType 4: Dúplex",
+    "HouseType 2: Casa o chalet",
+]
 
 
 if save_path.exists():
@@ -486,4 +507,46 @@ def process_boolean_features(frame: pd.DataFrame) -> pd.DataFrame:
 
     # Convert to binary
     frame[NON_EMPTY_FEATURES] = frame[NON_EMPTY_FEATURES].astype(int)
+    return frame
+
+
+@FunctionTransformer
+def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
+    # Process energy certificates. Set as indices in ordered list
+    frame["energy_certificate_provided"] = frame["energy_certificate"] == "no indicado"
+    frame["energy_certificate"] = frame["energy_certificate"].apply(
+        lambda certificate: ENERGY_CERTIFICATE_ORDER.index(certificate)
+    )
+
+    # Process built_year
+    frame["built_year"][~frame["built_year"].between(0, datetime.now().year)] = None
+    labels = np.linspace(0, 1, 21).round(3)
+    built_year_notna_mask = ~frame["built_year"].isna()
+    frame["built_year"][built_year_notna_mask] = pd.qcut(
+        frame["built_year"][built_year_notna_mask], q=21, labels=labels
+    ).astype(float)
+    frame["built_year"][frame["built_year"].isna()] = 0
+
+    # Process n_rooms. Minmax transform
+    frame["n_rooms"] = (frame["n_rooms"] - frame["n_rooms"].min()) / (
+        frame["n_rooms"].max() - frame["n_rooms"].min()
+    )
+
+    # Process n_bathrooms. Restore from known samples
+    bathrooms_stated_mask = ~frame["n_bathrooms"].isna()
+    bathroom_coefficient = (
+        frame[bathrooms_stated_mask]["n_rooms"]
+        / frame[bathrooms_stated_mask]["n_bathrooms"]
+    ).mean()
+    frame["n_bathrooms"][~bathrooms_stated_mask] = (
+        (frame[~bathrooms_stated_mask]["n_rooms"] / bathroom_coefficient)
+        .round()
+        .astype(int)
+    )
+
+    # Process house_type_id. Set as indices in ordered list
+    frame["house_type_id"] = frame["house_type_id"].apply(
+        lambda house_type_id: HOUSE_TYPE_ORDER.index(house_type_id)
+    )
+
     return frame
