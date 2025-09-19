@@ -11,7 +11,6 @@ from geopy.distance import geodesic
 from geopy.exc import GeocoderTimedOut
 from geopy.geocoders import Nominatim
 from geopy.location import Location
-from sklearn.preprocessing import FunctionTransformer
 from tenacity import retry, stop_after_attempt, wait_fixed
 from tqdm.auto import tqdm
 
@@ -140,7 +139,6 @@ else:
     df.to_csv(save_path)
 
 
-@FunctionTransformer
 def convert_target(frame: pd.DataFrame) -> pd.DataFrame:
     """Applies target transformations.
 
@@ -162,7 +160,6 @@ def convert_target(frame: pd.DataFrame) -> pd.DataFrame:
     return frame
 
 
-@FunctionTransformer
 def revert_target(frame: pd.DataFrame) -> pd.DataFrame:
     """Reverts target transformations.
 
@@ -183,7 +180,6 @@ def revert_target(frame: pd.DataFrame) -> pd.DataFrame:
     return frame
 
 
-@FunctionTransformer
 def process_square_meters(frame: pd.DataFrame) -> pd.DataFrame:
     """Process square meters columns.
 
@@ -409,7 +405,6 @@ def split_neighbourhood_id(
     )
 
 
-@FunctionTransformer
 def process_neighborhoods(frame: pd.DataFrame) -> pd.DataFrame:
     """Prepares and encodes neihborhoods' features.
 
@@ -505,7 +500,6 @@ def process_neighborhoods(frame: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-@FunctionTransformer
 def process_boolean_features(frame: pd.DataFrame) -> pd.DataFrame:
     """Prepares boolean features.
 
@@ -536,7 +530,6 @@ def process_boolean_features(frame: pd.DataFrame) -> pd.DataFrame:
     return frame
 
 
-@FunctionTransformer
 def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
     """Prepares ordinal features.
 
@@ -559,6 +552,7 @@ def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
         frame with added and processed ordinal features
     """
     # Process energy certificates. Set as indices in ordered list
+    frame["energy_certificate"] = frame["energy_certificate"].fillna("no indicado")
     frame["energy_certificate_provided"] = (
         frame["energy_certificate"] == "no indicado"
     ).astype(int)
@@ -568,12 +562,15 @@ def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
 
     # Process built_year
     frame["built_year"][~frame["built_year"].between(0, datetime.now().year)] = None
-    labels = np.linspace(0, 1, 21).round(3)
-    built_year_notna_mask = ~frame["built_year"].isna()
-    frame["built_year"][built_year_notna_mask] = pd.qcut(
-        frame["built_year"][built_year_notna_mask], q=21, labels=labels
+    built_year_na_mask = frame["built_year"].isna()
+    bins = [0, 1800, 1900, 1950, 1970, 1990, *list(range(2010, 2028, 2))]
+    labels = [1800, 1900, 1950, 1970, 1990, *list(range(2010, 2028, 2))]
+    frame.loc[~built_year_na_mask, "built_year"] = pd.cut(
+        frame.loc[~built_year_na_mask, "built_year"],
+        bins=bins,
+        labels=labels,
     ).astype(float)
-    frame["built_year"][frame["built_year"].isna()] = 0
+    frame["built_year"][built_year_na_mask] = 0
 
     # Process n_bathrooms. Restore from known samples
     bathrooms_stated_mask = ~frame["n_bathrooms"].isna()
@@ -586,14 +583,12 @@ def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
     )
 
     # Process house_type_id. Set as indices in ordered list
-    frame["house_type_id"] = frame["house_type_id"].apply(
-        lambda house_type_id: HOUSE_TYPE_ORDER.index(house_type_id)
-    )
+    house_type_order_mapping = dict(tuple(enumerate(HOUSE_TYPE_ORDER)))
+    frame["house_type_id"] = frame["house_type_id"].map(house_type_order_mapping)
 
     return frame
 
 
-@FunctionTransformer
 def feature_selector(frame: pd.DataFrame) -> pd.DataFrame:
     """Select only required features.
 
