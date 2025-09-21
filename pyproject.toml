@@ -203,8 +203,6 @@ dependencies = [
     "python-multipart==0.0.20",
     "python-slugify==8.0.4",
     "pytz==2025.2",
-    "pywin32==311",
-    "pywinpty==3.0.0",
     "PyYAML==6.0.2",
     "pyzmq==27.1.0",
     "referencing==0.36.2",
@@ -279,13 +277,21 @@ dependencies = [
     "iniconfig==2.1.0",
     "ruff==0.13.1",
     "pre_commit==4.3.0",
+    "pytest-asyncio==1.2.0",
+    "pytest-cov==7.0.0",
 ]
 authors = [{ name = "Anton Tolmachev" }]
 readme = "README.md"
 keywords = ["ML", "FastAPI", "Pipeline", "MLFlow"]
 
 [tool.setuptools]
-packages = ["task1"]
+packages = ["task1", "task2"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [project.urls]
 Homepage = "https://example.com"
+
+[project.optional-dependencies]
+windows = ["pywin32==311", "pywinpty==3.0.0"]

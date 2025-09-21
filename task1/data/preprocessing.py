@@ -125,11 +125,6 @@ def process_square_meters(frame: pd.DataFrame) -> pd.DataFrame:
     # Derive median ratio of built/useful square meters and restore both columns
     median_ratio = (clean_frame["sq_mt_built"] / clean_frame["sq_mt_useful"]).median()
 
-    # frame = frame[
-    #     (sq_mt_built_present & sq_mt_built_meaningful)
-    #     | (sq_mt_useful_present & sq_mt_useful_meaningful)
-    # ]
-
     frame["sq_mt_built_proc"] = frame["sq_mt_built"]
     frame["sq_mt_built_proc"].loc[frame["sq_mt_built_proc"].isna()] = (
         frame["sq_mt_useful"].loc[frame["sq_mt_built_proc"].isna()] * median_ratio
@@ -465,8 +460,9 @@ def process_ordinal_features(frame: pd.DataFrame) -> pd.DataFrame:
     frame["energy_certificate_provided"] = (
         frame["energy_certificate"] == "no indicado"
     ).astype(int)
-    frame["energy_certificate"] = frame["energy_certificate"].apply(
-        lambda certificate: ENERGY_CERTIFICATE_ORDER.index(certificate)
+    energy_certificate_mapping = dict(tuple(enumerate(ENERGY_CERTIFICATE_ORDER)))
+    frame["energy_certificate"] = frame["energy_certificate"].map(
+        energy_certificate_mapping
     )
 
     # Process built_year
