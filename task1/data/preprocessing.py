@@ -152,11 +152,27 @@ def process_square_meters(frame: pd.DataFrame) -> pd.DataFrame:
 
 @retry(wait=wait_fixed(RETRY_WAIT), stop=stop_after_attempt(STOP_AFTER_ATTEMPT))
 def _geocode_retry(locator: Nominatim, query: str) -> Location:
+    """A wrapper for Nominatim.geocode.
+
+    Allows small delays between calls to ensure robustness.
+
+    Parameters
+    ----------
+    locator : Nominatim
+        geopy's Nominatim locator
+    query : str
+        string to search on in the locator
+
+    Returns
+    -------
+    Location
+        An object with metadata for obtained location point
+    """
     return locator.geocode(query)
 
 
 def get_distance_and_bearing(
-    latitude1, longitude1, latitude2, longitude2
+    latitude1: float, longitude1: float, latitude2: float, longitude2: float
 ) -> tuple[float, float, float]:
     """Encodes coordinate relative to base.
 
@@ -169,13 +185,13 @@ def get_distance_and_bearing(
 
     Parameters
     ----------
-    latitude1 : _type_
+    latitude1 : float
         base latitude
-    longitude1 : _type_
+    longitude1 : float
         base longitude
-    latitude2 : _type_
+    latitude2 : float
         encoded point's latitude
-    longitude2 : _type_
+    longitude2 : float
         encoded point's longitude
 
     Returns
@@ -231,12 +247,21 @@ def split_neighbourhood_id(
     neighborhood_id : str
         A string of the following format:
         "Neighborhood {int}: {neighborhood_name} ({sq_mt_price} €/m2) - District {int}: {district_name}"
+    locator : Nominatim | None, optional
+        either geopy locator or None, by default None
+    center_point : Location | None, optional
+        _description_, by default None
 
     Returns
     -------
     tuple[str, str, float | None, float, float, float]
         (neighborhood_name, district_name, sq_mt_price, center_distance_neighborhood, bearing_sin_neighborhood,
         bearing_cos_neighborhood, neighborhood_latitude, neighborhood_longitude)
+
+    Raises
+    ------
+    GeocoderTimedOut
+        When geopy can't process a location.
     """
 
     if locator is None:

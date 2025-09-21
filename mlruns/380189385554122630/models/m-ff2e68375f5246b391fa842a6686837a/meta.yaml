@@ -1,0 +1,10 @@
+artifact_location: file:///d:/Productivity/smg_assignment/mlruns/380189385554122630/models/m-ff2e68375f5246b391fa842a6686837a/artifacts
+creation_timestamp: 1758476894756
+experiment_id: '380189385554122630'
+last_updated_timestamp: 1758476896551
+model_id: m-ff2e68375f5246b391fa842a6686837a
+model_type: null
+name: model
+source_run_id: a5fbbe27df534ae39d8af73c736563cd
+status: 2
+status_message: null

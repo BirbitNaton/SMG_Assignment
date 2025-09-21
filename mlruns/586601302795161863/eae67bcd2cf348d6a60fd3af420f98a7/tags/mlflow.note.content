@@ -1,0 +1,1 @@
+Weaker learners, less l2 regularization, more iterations and cv splits. Some fields are dropped to show default functionality.
