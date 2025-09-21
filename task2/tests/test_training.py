@@ -39,6 +39,7 @@ def test_training():
 
     Mocks most of the fields and validates pipelines' robustness an OLS model.
     """
+    mlflow.end_run()
     with tempfile.TemporaryDirectory() as temp_dir:
         tracking_uri = Path(temp_dir).absolute().as_uri()
         mlflow.set_tracking_uri(tracking_uri)
