@@ -2,10 +2,17 @@
 requires = ["setuptools>=65.5.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+extend-select = ["I"]
+fix = true
+
 [project]
 name = "smg_assignment"
 version = "0.1.0"
 description = "SMG Assignment project with ML and FastAPI"
+requires-python = ">=3.11"
 dependencies = [
     "a2wsgi==1.10.10",
     "aiosqlite==0.21.0",
@@ -270,6 +277,8 @@ dependencies = [
     "zipp==3.23.0",
     "pytest==8.4.2",
     "iniconfig==2.1.0",
+    "ruff==0.13.1",
+    "pre_commit==4.3.0",
 ]
 authors = [{ name = "Anton Tolmachev" }]
 readme = "README.md"
