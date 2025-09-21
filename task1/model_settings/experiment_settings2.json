@@ -1,0 +1,16 @@
+{
+    "depth": 6,
+    "learning_rate": 0.01,
+    "iterations": 1000,
+    "verbose": 0,
+    "l2_leaf_reg": 0.5,
+    "description": "Weaker learners, less complexity penalty, more iterations and cv splits. Some fields are dropped to show default functionality.",
+    "tags": {
+        "model_type": "CatBoostRegressor",
+        "dataset": "Madrid Housing Prices",
+        "launch": "experiment_settings1"
+    },
+    "cv_splits": 10,
+    "scoring": "r2",
+    "experiment_name": "Madrid Housing Prices Experiment"
+}
