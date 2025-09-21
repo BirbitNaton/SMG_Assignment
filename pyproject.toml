@@ -279,6 +279,7 @@ dependencies = [
     "iniconfig==2.1.0",
     "ruff==0.13.1",
     "pre_commit==4.3.0",
+    "pytest-asyncio==1.2.0",
 ]
 authors = [{ name = "Anton Tolmachev" }]
 readme = "README.md"
@@ -286,6 +287,9 @@ keywords = ["ML", "FastAPI", "Pipeline", "MLFlow"]
 
 [tool.setuptools]
 packages = ["task1"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [project.urls]
 Homepage = "https://example.com"
