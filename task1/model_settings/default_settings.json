@@ -1,0 +1,17 @@
+{
+    "depth": 12,
+    "learning_rate": 0.01,
+    "iterations": 500,
+    "verbose": 0,
+    "random_seed": 42,
+    "l2_leaf_reg": 1,
+    "description": "Default CatBoost model. These are reference parameters and could be tuned for better performance.",
+    "tags": {
+        "model_type": "CatBoostRegressor",
+        "dataset": "Madrid Housing Prices"
+    },
+    "cv_splits": 5,
+    "scoring": "r2",
+    "experiment_name": "Madrid Housing Prices Experiment",
+    "log_entire_dataset": true
+}
