@@ -1,11 +1,18 @@
 import mlflow
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 
 from task1.training.models import TrainingParamsUtils
 from task1.training.training import log_data_version, log_model_metrics, start_training
+
+
+@pytest.fixture(autouse=True)
+def mlflow_experiment():
+    mlflow.set_experiment("ci-test-experiment")
+    yield
 
 
 def test_data_logging():
