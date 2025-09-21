@@ -12,7 +12,7 @@ This is the practical assignment for the Swiss Marketplace Group. The overall ta
 6. Activate venv via:
     - **Unix system** - `source .venv/bin/activate`
     - **Windows system** - `./venv/Scripts/Activate.ps1`
-7. Run `pip install -e .` to install required dependencies.
+7. Run `pip install -e .` to install required dependencies. On a `Windows` machine use `pip install -e .[windows]`
 
 # Runtime
 1. Create your settings.json in `./task1/model_settings/` or use one of the presets present there.
