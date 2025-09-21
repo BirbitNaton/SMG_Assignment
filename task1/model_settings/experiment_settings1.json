@@ -4,7 +4,7 @@
     "iterations": 1000,
     "verbose": 0,
     "l2_leaf_reg": 0.5,
-    "description": "Weaker learners, less complexity penalty, more iterations and cv splits. Some fields are dropped to show default functionality.",
+    "description": "Weaker learners, less l2 regularization, more iterations and cv splits. Some fields are dropped to show default functionality.",
     "tags": {
         "model_type": "CatBoostRegressor",
         "dataset": "Madrid Housing Prices",
