@@ -1,2 +1,7 @@
 Machine_Learning_Engineer_Technical_Assessment.pdf
 venv
+smg_assignment.egg-info
+catboost_info
+mlruns
+task1/__pycache__
+task1/*/__pycache__
