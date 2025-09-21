@@ -284,7 +284,7 @@ readme = "README.md"
 keywords = ["ML", "FastAPI", "Pipeline", "MLFlow"]
 
 [tool.setuptools]
-packages = ["task1"]
+packages = ["task1", "task2"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
