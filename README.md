@@ -555,3 +555,6 @@ flowchart TD
     
     C --> Z
 ```
+
+# Testing
+Tests are run automatically in CI, and could be run manually via `pytest --cov=task1 --cov=task2 --cov-report=xml --cov-report=term-missing`
