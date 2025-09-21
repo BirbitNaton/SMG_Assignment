@@ -35,4 +35,4 @@ jobs:
 
       - name: Run integration tests
         run: |
-          pytest ./task2/tests --verbose
+          pytest --cov=task1 --cov=task2 --cov-report=xml --cov-report=term-missing
