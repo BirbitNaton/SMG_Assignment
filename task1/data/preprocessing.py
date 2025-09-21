@@ -15,119 +15,27 @@ from sklearn.pipeline import FunctionTransformer
 from tenacity import retry, stop_after_attempt, wait_fixed
 from tqdm.auto import tqdm
 
-warnings.filterwarnings("ignore")
-
-root_path = Path(__file__).parent
-dataset_filename = "houses_Madrid.csv"
-save_path = root_path / "data" / dataset_filename
-datase_schema_path = root_path / "data" / "dataset_schema.json"
-logger = getLogger()
-dataset_schema = json.load(Path(root_path / "data" / "dataset_schema.json").open())
-
-NEIGHBORHOOD_FEATURE_NAMES = [
-    "sq_mt_price",
-    "center_distance",
-    "bearing_sin",
-    "bearing_cos",
-    "latitude",
-    "longitude",
-]
-NEIGHBORHOOD_INDICES = [
-    *NEIGHBORHOOD_FEATURE_NAMES,
-    "neighborhood_name",
-    "district_name",
-]
-RESTORE_PRICE_NEIGHBORS = 3
-RETRY_WAIT = 2
-STOP_AFTER_ATTEMPT = 10
-LOCATOR_TIMEOUT = 10
-
-
-ALL_BOOLEAN_FEATURES = [
-    "is_floor_under",
-    "has_central_heating",
-    "has_individual_heating",
-    "are_pets_allowed",
-    "has_ac",
-    "is_new_development",
-    "is_renewal_needed",
-    "has_fitted_wardrobes",
-    "has_lift",
-    "is_exterior",
-    "has_garden",
-    "has_pool",
-    "has_terrace",
-    "has_balcony",
-    "has_storage_room",
-    "is_furnished",
-    "is_kitchen_equipped",
-    "is_accessible",
-    "has_green_zones",
-    "has_parking",
-    "has_private_parking",
-    "has_public_parking",
-    "is_parking_included_in_price",
-    "is_orientation_north",
-    "is_orientation_west",
-    "is_orientation_south",
-    "is_orientation_east",
-    "is_orientation_stated",
-]
-COMPLETE_BOOLEAN_FEAURES = ["is_renewal_needed", "has_parking"]
-EMPTY_BOOLEAN_FEATURES = [
-    "is_kitchen_equipped",
-    "is_furnished",
-    "are_pets_allowed",
-    "has_public_parking",
-    "has_private_parking",
-]
-POLAR_BOOLEAN_FEATURES = [
-    "has_ac",
-    "has_terrace",
-    "is_parking_included_in_price",
-    "has_storage_room",
-    "has_pool",
-    "is_accessible",
-    "has_green_zones",
-    "has_balcony",
-    "has_garden",
-    "has_individual_heating",
-    "has_central_heating",
-    "has_lift",
-    "is_new_development",
-    "is_floor_under",
-    "is_exterior",
-    "has_fitted_wardrobes",
-]
-INCOMPLETE_BOOLEAN_FEATURES = [
-    "is_orientation_south",
-    "is_orientation_north",
-    "is_orientation_east",
-    "is_orientation_west",
-]
-NON_EMPTY_FEATURES = list(
-    set(ALL_BOOLEAN_FEATURES).difference(set(EMPTY_BOOLEAN_FEATURES))
+from task1.data.utils import (
+    DATA_PATH,
+    ENERGY_CERTIFICATE_ORDER,
+    HOUSE_TYPE_ORDER,
+    INCOMPLETE_BOOLEAN_FEATURES,
+    LOCATOR_TIMEOUT,
+    NEIGHBORHOOD_FEATURE_NAMES,
+    NON_EMPTY_FEATURES,
+    POLAR_BOOLEAN_FEATURES,
+    RESTORE_PRICE_NEIGHBORS,
+    RETRY_WAIT,
+    STOP_AFTER_ATTEMPT,
 )
 
-ENERGY_CERTIFICATE_ORDER = [
-    "no indicado",
-    "en trámite",
-    "G",
-    "F",
-    "E",
-    "D",
-    "C",
-    "B",
-    "A",
-    "inmueble exento",
-]
-HOUSE_TYPE_ORDER = [
-    np.nan,
-    "HouseType 1: Pisos",
-    "HouseType 5: Áticos",
-    "HouseType 4: Dúplex",
-    "HouseType 2: Casa o chalet",
-]
+warnings.filterwarnings("ignore")
+
+root_path = Path(__file__).parent.parent
+dataset_filename = "houses_Madrid.csv"
+save_path = DATA_PATH / dataset_filename
+logger = getLogger()
+dataset_schema = json.load((DATA_PATH / "dataset_schema.json").open())
 
 
 if save_path.exists():
