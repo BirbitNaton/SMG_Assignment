@@ -1,0 +1,14 @@
+artifact_uri: file:///d:/Productivity/smg_assignment/mlruns/380189385554122630/2e981baf8dd84cb2a25f322e6d99752e/artifacts
+end_time: 1758475777616
+entry_point_name: ''
+experiment_id: '380189385554122630'
+lifecycle_stage: active
+run_id: 2e981baf8dd84cb2a25f322e6d99752e
+run_name: catboost_pipeline
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1758475777547
+status: 4
+tags: []
+user_id: Anthony

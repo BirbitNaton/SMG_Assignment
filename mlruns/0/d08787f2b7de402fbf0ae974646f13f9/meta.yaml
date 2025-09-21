@@ -1,0 +1,14 @@
+artifact_uri: file:///D:/Productivity/smg_assignment/mlruns/0/d08787f2b7de402fbf0ae974646f13f9/artifacts
+end_time: 1758475223122
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d08787f2b7de402fbf0ae974646f13f9
+run_name: persistent-crab-439
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1758475222584
+status: 3
+tags: []
+user_id: Anthony
