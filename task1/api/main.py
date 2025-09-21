@@ -64,6 +64,15 @@ model, model_info = load_model_for_app()
 
 @app.get("/health")
 def health():
+    """Allows health checks.
+
+    Tries loading the latest model_info and in case it can't raises HTTPException-503.
+
+    Raises
+    ------
+    HTTPException
+        When model can't be loaded
+    """
     if model is None:
         model_loc, _ = load_model_for_app()
         if model_loc is None:
@@ -73,6 +82,15 @@ def health():
 
 @app.get("/model/info")
 def model_info_endpoint():
+    """Retrievs model info.
+
+    Tries loading the latest model and in case it can't raises HTTPException-503.
+
+    Raises
+    ------
+    HTTPException
+        When model_info can't be loaded
+    """
     if model_info is None:
         raise HTTPException(status_code=503, detail="Model info not available")
     return {
@@ -85,6 +103,22 @@ def model_info_endpoint():
 
 @app.post("/predict")
 def predict(input: PredictionInput):
+    """Predicts for a single sample.
+
+    Feeds provided params to the model and retrieves the prediction.
+
+    Parameters
+    ----------
+    input : PredictionInput
+        Features to predict on. Check PredictionInput description for reference.
+
+    Raises
+    ------
+    HTTPException 422
+        When provided input doesn't fit the PredictionInput model
+    HTTPException 500
+        When prediction failed
+    """
     try:
         df = pd.DataFrame([input.model_dump()])
         prediction = np.exp(model.predict(df))
@@ -99,6 +133,22 @@ def predict(input: PredictionInput):
 
 @app.post("/batch_predict")
 def batch_predict(batch: BatchPredictionInput):
+    """Predicts for a batch of samples.
+
+    Feeds provided params's bacth to the model and retrieves the predictions.
+
+    Parameters
+    ----------
+    batch : BatchPredictionInput
+        A list of PredictionInput input samples
+
+    Raises
+    ------
+    HTTPException 422
+        When provided input doesn't fit the BatchPredictionInput model
+    HTTPException 500
+        When prediction failed
+    """
     try:
         df = pd.DataFrame([item.model_dump() for item in batch.inputs])
         predictions = np.exp(model.predict(df))
