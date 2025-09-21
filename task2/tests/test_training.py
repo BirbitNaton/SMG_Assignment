@@ -1,3 +1,6 @@
+import tempfile
+from pathlib import Path
+
 import mlflow
 import numpy as np
 import pandas as pd
@@ -36,19 +39,23 @@ def test_training():
 
     Mocks most of the fields and validates pipelines' robustness an OLS model.
     """
-    mlflow.end_run()
-    start_training(
-        Pipeline(steps=[("model", LinearRegression())]),
-        TrainingParamsUtils(
-            X_train=pd.DataFrame({"feat_1": list(range(40))}),
-            y_train=pd.Series(list(range(40))),
-            X_test=pd.DataFrame({"feat_1": list(range(40))}),
-            y_test=pd.Series(list(range(40))),
-            random_state=42,
-            cv_splits=2,
-            scoring="r2",
-            experiment_name="test_exp_name",
-            log_entire_dataset=False,
-        ),
-    )
-    mlflow.end_run()
+    with tempfile.TemporaryDirectory() as temp_dir:
+        tracking_uri = Path(temp_dir).absolute().as_uri()
+        mlflow.set_tracking_uri(tracking_uri)
+        mlflow.set_experiment("ci-test-exp")
+
+        start_training(
+            Pipeline(steps=[("model", LinearRegression())]),
+            TrainingParamsUtils(
+                X_train=pd.DataFrame({"feat_1": list(range(40))}),
+                y_train=pd.Series(list(range(40))),
+                X_test=pd.DataFrame({"feat_1": list(range(40))}),
+                y_test=pd.Series(list(range(40))),
+                random_state=42,
+                cv_splits=2,
+                scoring="r2",
+                experiment_name="test_exp_name",
+                log_entire_dataset=False,
+            ),
+        )
+        mlflow.end_run()
