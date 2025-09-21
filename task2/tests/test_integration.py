@@ -1,6 +1,9 @@
+from unittest.mock import MagicMock
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from task1.api import main
 from task1.api.main import app
 
 DEFAULT_PAYLOAD_SINGLE = {
@@ -43,6 +46,20 @@ DEFAULT_PAYLOAD_SINGLE = {
     "n_bathrooms": 0,
     "house_type_id": 0,
 }
+
+
+@pytest.fixture(autouse=True)
+def mock_model(monkeypatch):
+    dummy_model = MagicMock()
+    dummy_model.predict.return_value = [1, 2, 3]
+    monkeypatch.setattr(main, "model", dummy_model)
+
+
+@pytest.fixture(autouse=True)
+def mock_model_info(monkeypatch):
+    model_info = MagicMock()
+    model_info.name = None
+    monkeypatch.setattr(main, "model_info", model_info)
 
 
 @pytest.mark.asyncio
