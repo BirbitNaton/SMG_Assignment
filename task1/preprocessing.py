@@ -1,5 +1,5 @@
 import json
-import os
+import warnings
 from datetime import datetime
 from logging import getLogger
 from pathlib import Path
@@ -11,10 +11,13 @@ from geopy.distance import geodesic
 from geopy.exc import GeocoderTimedOut
 from geopy.geocoders import Nominatim
 from geopy.location import Location
+from sklearn.pipeline import FunctionTransformer
 from tenacity import retry, stop_after_attempt, wait_fixed
 from tqdm.auto import tqdm
 
-root_path = Path(os.getcwd()).parent
+warnings.filterwarnings("ignore")
+
+root_path = Path(__file__).parent
 dataset_filename = "houses_Madrid.csv"
 save_path = root_path / "data" / dataset_filename
 datase_schema_path = root_path / "data" / "dataset_schema.json"
@@ -139,7 +142,7 @@ else:
     df.to_csv(save_path)
 
 
-def convert_target(frame: pd.DataFrame) -> pd.DataFrame:
+def convert_target(target: pd.Series) -> pd.Series:
     """Applies target transformations.
 
     Applies log transform to the target, since it was
@@ -147,37 +150,35 @@ def convert_target(frame: pd.DataFrame) -> pd.DataFrame:
 
     Parameters
     ----------
-    frame : pd.DataFrame
-        initial / previous step frame
+    frame : pd.Series
+        initial target column
 
     Returns
     -------
-    pd.DataFrame
-        frame with changed target
+    pd.Series
+        logtransformed target
     """
 
-    frame["buy_price"] = np.log(frame["buy_price"])
-    return frame
+    return np.log(target)
 
 
-def revert_target(frame: pd.DataFrame) -> pd.DataFrame:
+def revert_target(target: pd.Series) -> pd.Series:
     """Reverts target transformations.
 
     Applies exponential function to revert log transform to the target.
 
     Parameters
     ----------
-    frame : pd.DataFrame
-        previous step frame
+    frame : pd.Series
+        previously logtransformed target column or a prediction array
 
     Returns
     -------
     pd.DataFrame
-        frame with changed target
+        target converted back to original scale
     """
 
-    frame["buy_price"] = np.exp(frame["buy_price"])
-    return frame
+    return np.exp(target)
 
 
 def process_square_meters(frame: pd.DataFrame) -> pd.DataFrame:
@@ -495,7 +496,7 @@ def process_neighborhoods(frame: pd.DataFrame) -> pd.DataFrame:
     )
 
     # Once prices are restored, the features should be mapped onto the dataset
-    return frame.drop(columns=["latitude", "longitude"]).merge(
+    return frame.drop(columns=["latitude", "longitude"], errors="ignore").merge(
         neighborhoods_data, how="left", left_on="neighborhood_id", right_index=True
     )
 
@@ -605,3 +606,20 @@ def feature_selector(frame: pd.DataFrame) -> pd.DataFrame:
         frame with only the selected features
     """
     return frame[dataset_schema["features"]]
+
+
+def get_preprocessing_stages():
+    """Get the preprocessing stages for the pipeline.
+
+    Returns
+    -------
+    list
+        A list of tuples representing the preprocessing stages.
+    """
+    return [
+        ("process_square_meters", FunctionTransformer(process_square_meters)),
+        ("process_neighborhoods", FunctionTransformer(process_neighborhoods)),
+        ("process_boolean_features", FunctionTransformer(process_boolean_features)),
+        ("process_ordinal_features", FunctionTransformer(process_ordinal_features)),
+        ("feature_selector", FunctionTransformer(feature_selector)),
+    ]
