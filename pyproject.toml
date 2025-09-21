@@ -278,6 +278,7 @@ dependencies = [
     "ruff==0.13.1",
     "pre_commit==4.3.0",
     "pytest-asyncio==1.2.0",
+    "pytest-cov==7.0.0",
 ]
 authors = [{ name = "Anton Tolmachev" }]
 readme = "README.md"
